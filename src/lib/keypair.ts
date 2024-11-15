@@ -32,7 +32,7 @@ export const generateExtractableKeyPair = async (): Promise<CryptoKeyPair> => {
   return keyPair;
 };
 
-// Take a webcrypto keypair and convert it to the same format Anza CLI uses
+// Take a webcrypto keyPair and convert it to the same format Anza CLI uses
 export const cryptoKeypairToSecretKeyJSON = async (
   keyPair: CryptoKeyPair,
 ): Promise<string> => {
@@ -49,13 +49,13 @@ export const cryptoKeypairToSecretKeyJSON = async (
   if (keyPair.publicKey.extractable === false) {
     throw new Error("Private key is not extractable");
   }
-  const rawPublicKeyBytes = await exportKey("raw", keyPair.publicKey);
+  const rawCryptoKeyBytes = await exportKey("raw", keyPair.publicKey);
 
   // Concatenate the raw private and public keys using expansion
   const combinedArrayBuffer = new Uint8Array(KEYPAIR_LENGTH);
   combinedArrayBuffer.set(new Uint8Array(rawPrivateKeyBytes), 0);
   combinedArrayBuffer.set(
-    new Uint8Array(rawPublicKeyBytes),
+    new Uint8Array(rawCryptoKeyBytes),
     KEYPAIR_PUBLIC_KEY_OFFSET,
   );
 
@@ -70,7 +70,7 @@ export const bytesToCryptoKeyPair = async (
   // This format was commonly used in NaCl / libsodium when they were popular.
   if (bytes.length !== 64) {
     throw new Error(
-      "Invalid byte length for Anza keypair - should be 64 bytes",
+      "Invalid byte length for Anza keyPair - should be 64 bytes",
     );
   }
   const rawPrivateKey = bytes.subarray(0, 32);
@@ -102,7 +102,7 @@ export const bytesToCryptoKeyPair = async (
   return keyPair;
 };
 
-export const getCryptoKeypairFromFile = async (
+export const getCryptoKeyPairFromFile = async (
   filepath?: string,
 ): Promise<CryptoKeyPair> => {
   // Node-specific imports
@@ -125,7 +125,7 @@ export const getCryptoKeypairFromFile = async (
     const fileContentsBuffer = await readFile(filepath);
     fileContents = fileContentsBuffer.toString();
   } catch (error) {
-    throw new Error(`Could not read keypair from file at '${filepath}'`);
+    throw new Error(`Could not read keyPair from file at '${filepath}'`);
   }
 
   try {
@@ -141,10 +141,10 @@ export const getCryptoKeypairFromFile = async (
   }
 };
 
-// Get a keypair based on an environment variable
-// The keypair is expected to be a JSON string of the raw bytes
+// Get a keyPair based on an environment variable
+// The keyPair is expected to be a JSON string of the raw bytes
 // per what Anza CLI uses
-export const getCryptoKeypairFromEnvironment = (variableName: string) => {
+export const getCryptoKeyPairFromEnvironment = (variableName: string) => {
   const privateKeyString = process.env[variableName];
   if (!privateKeyString) {
     throw new Error(`Please set '${variableName}' in environment.`);
@@ -160,8 +160,8 @@ export const getCryptoKeypairFromEnvironment = (variableName: string) => {
   }
 };
 
-export const addCryptoKeypairToEnvFile = async (
-  keypair: CryptoKeyPair,
+export const addCryptoKeyPairToEnvFile = async (
+  keyPair: CryptoKeyPair,
   variableName: string,
   envFileName?: string,
 ) => {
@@ -174,7 +174,7 @@ export const addCryptoKeypairToEnvFile = async (
   if (existingSecretKey) {
     throw new Error(`'${variableName}' already exists in env file.`);
   }
-  const privateKeyString = await cryptoKeypairToSecretKeyJSON(keypair);
+  const privateKeyString = await cryptoKeypairToSecretKeyJSON(keyPair);
   await appendFile(
     envFileName,
     // TODO: Replace with actual Solana base58 version of public key
@@ -184,7 +184,7 @@ export const addCryptoKeypairToEnvFile = async (
 };
 
 // Shout out to Dean from WBA for this technique
-export const makeCryptoKeypairs = (
+export const makeCryptoKeyPairs = (
   amount: number,
 ): Promise<Array<CryptoKeyPair>> => {
   return Promise.all(Array.from({ length: amount }, () => generateKeyPair()));

@@ -1,85 +1,99 @@
-import { type Connection, CryptoKeypair, LAMPORTS_PER_SOL, type PublicKey } from "@solana/web3.js";
-import type { InitializeCryptoKeypairOptions } from "../types";
-import { addCryptoKeypairToEnvFile, getCryptoKeypairFromEnvironment, getCryptoKeypairFromFile } from "./keypair";
+import {
+  Address,
+  generateKeyPair,
+  getAddressFromPublicKey,
+  lamports,
+  Lamports,
+  Rpc,
+  // Yes this does both DevNet and TestNet but not Mainnet
+  // See web3.js code
+  SolanaRpcApi,
+} from "@solana/web3.js";
+import type { InitializeCryptoKeyPairOptions } from "../types";
+import {
+  addCryptoKeyPairToEnvFile,
+  generateExtractableKeyPair,
+  getCryptoKeyPairFromEnvironment,
+  getCryptoKeyPairFromFile,
+} from "./keypair";
+import { SOL } from "./constants";
 
-const DEFAULT_AIRDROP_AMOUNT = 1 * LAMPORTS_PER_SOL;
-const DEFAULT_MINIMUM_BALANCE = 0.5 * LAMPORTS_PER_SOL;
+const DEFAULT_AIRDROP_AMOUNT = lamports(1n * SOL);
+const DEFAULT_MINIMUM_BALANCE = lamports(500_000_000n);
 const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 
-// TODO: honestly initializeCryptoKeypair is a bit vague
+// TODO: honestly initializeCryptoKeyPair is a bit vague
 // we can probably give this a better name,
 // just not sure what yet
-export const initializeCryptoKeypair = async (
-  connection: Connection,
-  options?: InitializeCryptoKeypairOptions,
-): Promise<CryptoKeypair> => {
+export const initializeCryptoKeyPair = async (
+  rpc: Rpc<any>,
+  options?: InitializeCryptoKeyPairOptions,
+): Promise<CryptoKeyPair> => {
   const {
-    keypairPath,
+    keyPairPath,
     envFileName,
     envVariableName = DEFAULT_ENV_KEYPAIR_VARIABLE_NAME,
     airdropAmount = DEFAULT_AIRDROP_AMOUNT,
     minimumBalance = DEFAULT_MINIMUM_BALANCE,
   } = options || {};
 
-  let keypair: CryptoKeyPair;
+  let keyPair: CryptoKeyPair;
 
-  if (keypairPath) {
-    keypair = await getCryptoKeypairFromFile(keypairPath);
+  if (keyPairPath) {
+    keyPair = await getCryptoKeyPairFromFile(keyPairPath);
   } else if (process.env[envVariableName]) {
-    keypair = getCryptoKeypairFromEnvironment(envVariableName);
+    keyPair = await getCryptoKeyPairFromEnvironment(envVariableName);
   } else {
-    keypair = generateKeyPair();
-    await addCryptoKeypairToEnvFile(keypair, envVariableName, envFileName);
+    // TODO: we should make a temporary keyPair and write it to the environment
+    // then reload the one from the environment as non-extractable
+    keyPair = await generateExtractableKeyPair();
+    await addCryptoKeyPairToEnvFile(keyPair, envVariableName, envFileName);
   }
+
+  const address = await getAddressFromPublicKey(keyPair.publicKey);
 
   if (airdropAmount) {
-    await airdropIfRequired(
-      connection,
-      keypair.publicKey,
-      airdropAmount,
-      minimumBalance,
-    );
+    await airdropIfRequired(rpc, address, airdropAmount, minimumBalance);
   }
 
-  return keypair;
-}
+  return keyPair;
+};
 
 // Not exported as we don't want to encourage people to
 // request airdrops when they don't need them, ie - don't bother
 // the faucet unless you really need to!
 const requestAndConfirmAirdrop = async (
-  connection: Connection,
-  publicKey: PublicKey,
-  amount: number,
-) => {
-  const airdropTransactionSignature = await connection.requestAirdrop(
-    publicKey,
-    amount,
-  );
+  rpc: Rpc<SolanaRpcApi>,
+  address: Address,
+  amount: Lamports,
+): Promise<Lamports> => {
   // Wait for airdrop confirmation
-  const latestBlockHash = await connection.getLatestBlockhash();
-  await connection.confirmTransaction(
-    {
-      blockhash: latestBlockHash.blockhash,
-      lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-      signature: airdropTransactionSignature,
-    },
-    // "finalized" is slow but we must be absolutely sure
-    // the airdrop has gone through
-    "finalized",
-  );
-  return connection.getBalance(publicKey, "finalized");
+  // "finalized" is slow but we must be absolutely sure
+  // the airdrop has gone through
+  const airdropTransactionSignature = await rpc
+    .requestAirdrop(address, amount, { commitment: "finalized" })
+    .send();
+
+  const getBalanceResponse = await rpc
+    .getBalance(address, { commitment: "finalized" })
+    .send();
+
+  return getBalanceResponse.value;
 };
 
 export const airdropIfRequired = async (
-  connection: Connection,
-  publicKey: PublicKey,
-  airdropAmount: number,
-  minimumBalance: number,
-): Promise<number> => {
-  const balance = await connection.getBalance(publicKey, "confirmed");
-  if (balance < minimumBalance) {
-    return requestAndConfirmAirdrop(connection, publicKey, airdropAmount);
+  rpc: Rpc<SolanaRpcApi>,
+  address: Address,
+  airdropAmount: Lamports,
+  minimumBalance: Lamports,
+): Promise<Lamports> => {
+  const balanceResponse = await rpc
+    .getBalance(address, {
+      commitment: "finalized",
+    })
+    .send();
+  if (balanceResponse.value < minimumBalance) {
+    return requestAndConfirmAirdrop(rpc, address, airdropAmount);
   }
-  return balance;
+  return balanceResponse.value;
 };

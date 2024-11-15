@@ -1,13 +1,22 @@
-import { AddressLookupTableAccount, Commitment, ComputeBudgetProgram, Connection, PublicKey, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import {
+  AddressLookupTableAccount,
+  Commitment,
+  ComputeBudgetProgram,
+  Connection,
+  CryptoKey,
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction,
+} from "@solana/web3.js";
 import { getErrorFromRPCResponse } from "./logs";
 
 export const confirmTransaction = async (
-  connection: Connection,
+  rpc: Rpc<any>,
   signature: string,
   commitment: Commitment = "finalized",
 ): Promise<string> => {
-  const block = await connection.getLatestBlockhash();
-  const rpcResponse = await connection.confirmTransaction(
+  const block = await rpc.getLatestBlockhash();
+  const rpcResponse = await rpc.confirmTransaction(
     {
       signature,
       ...block,
@@ -24,9 +33,9 @@ export const confirmTransaction = async (
 // Credit https://twitter.com/stegabob, originally from
 // https://x.com/stegaBOB/status/1766662289392889920
 export const getSimulationComputeUnits = async (
-  connection: Connection,
+  rpc: Rpc<any>,
   instructions: Array<TransactionInstruction>,
-  payer: PublicKey,
+  payer: CryptoKey,
   lookupTables: Array<AddressLookupTableAccount> | [],
 ): Promise<number | null> => {
   const testInstructions = [
@@ -43,11 +52,11 @@ export const getSimulationComputeUnits = async (
       payerKey: payer,
       // RecentBlockhash can by any public key during simulation
       // since 'replaceRecentBlockhash' is set to 'true' below
-      recentBlockhash: PublicKey.default.toString(),
+      recentBlockhash: CryptoKey.default.toString(),
     }).compileToV0Message(lookupTables),
   );
 
-  const rpcResponse = await connection.simulateTransaction(testTransaction, {
+  const rpcResponse = await rpc.simulateTransaction(testTransaction, {
     replaceRecentBlockhash: true,
     sigVerify: false,
   });

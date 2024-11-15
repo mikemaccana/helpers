@@ -38,7 +38,7 @@
     "blockchain",
     "secret key",
     "private key",
-    "keypair",
+    "keyPair",
     "devnet SOL",
     "faucet"
   ],
@@ -52,6 +52,8 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@solana-program/system": "^0.6.2",
+    "@solana-program/token": "^0.4.1",
     "@solana/assertions": "^2.0.1-canary-20241114225255",
     "@solana/errors": "^2.0.1-canary-20241114225255",
     "@solana/web3.js": "^2.0.0",

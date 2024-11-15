@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
-import { CryptoKeypair, generateKeyPair } from "@solana/web3.js";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { CryptoKeyPair, generateKeyPair } from "@solana/web3.js";
+import { SOL } from "@solana/web3.js";
 import { Connection } from "@solana/web3.js";
 import {
   airdropIfRequired,
@@ -12,27 +12,22 @@ import { Transaction } from "@solana/web3.js";
 import { SystemProgram } from "@solana/web3.js";
 import assert from "node:assert";
 import { TransactionInstruction } from "@solana/web3.js";
-import { PublicKey } from "@solana/web3.js";
+import { CryptoKey } from "@solana/web3.js";
 
 const LOCALHOST = "http://127.0.0.1:8899";
-const MEMO_PROGRAM_ID = new PublicKey(
+const MEMO_PROGRAM_ID = new CryptoKey(
   "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr",
 );
 
 describe("confirmTransaction", () => {
   test("confirmTransaction works for a successful transaction", async () => {
-    const connection = new Connection(LOCALHOST);
+    const rpc = getDefaultRpc(LOCALHOST);
     const [sender, recipient] = [generateKeyPair(), generateKeyPair()];
-    const lamportsToAirdrop = 2 * LAMPORTS_PER_SOL;
-    await airdropIfRequired(
-      connection,
-      sender.publicKey,
-      lamportsToAirdrop,
-      1 * LAMPORTS_PER_SOL,
-    );
+    const lamportsToAirdrop = 2 * SOL;
+    await airdropIfRequired(rpc, sender.publicKey, lamportsToAirdrop, 1 * SOL);
 
     const signature = await sendAndConfirmTransaction(
-      connection,
+      rpc,
       new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: sender.publicKey,
@@ -43,20 +38,15 @@ describe("confirmTransaction", () => {
       [sender],
     );
 
-    await confirmTransaction(connection, signature);
+    await confirmTransaction(rpc, signature);
   });
 });
 
 describe("getSimulationComputeUnits", () => {
   test("getSimulationComputeUnits returns 300 CUs for a SOL transfer, and 3888 for a SOL transfer with a memo", async () => {
-    const connection = new Connection(LOCALHOST);
+    const rpc = getDefaultRpc(LOCALHOST);
     const sender = generateKeyPair();
-    await airdropIfRequired(
-      connection,
-      sender.publicKey,
-      1 * LAMPORTS_PER_SOL,
-      1 * LAMPORTS_PER_SOL,
-    );
+    await airdropIfRequired(rpc, sender.publicKey, 1 * SOL, 1 * SOL);
     const recipient = generateKeyPair().publicKey;
 
     const sendSol = SystemProgram.transfer({
@@ -72,7 +62,7 @@ describe("getSimulationComputeUnits", () => {
     });
 
     const computeUnitsSendSol = await getSimulationComputeUnits(
-      connection,
+      rpc,
       [sendSol],
       sender.publicKey,
       [],
@@ -82,7 +72,7 @@ describe("getSimulationComputeUnits", () => {
     assert.equal(computeUnitsSendSol, 300);
 
     const computeUnitsSendSolAndSayThanks = await getSimulationComputeUnits(
-      connection,
+      rpc,
       [sendSol, sayThanks],
       sender.publicKey,
       [],
