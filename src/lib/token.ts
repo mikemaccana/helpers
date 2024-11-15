@@ -1,5 +1,5 @@
-// import { Connection, CryptoKeypair, PublicKey, sendAndConfirmTransaction, Signer, SystemProgram, Transaction, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
-// import { makeCryptoKeypairs } from "./keypair";
+// import { Connection, CryptoKeyPair, CryptoKey, sendAndConfirmTransaction, Signer, SystemProgram, Transaction, TransactionInstruction, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+// import { makeCryptoKeyPairs } from "./keyPair";
 // import { createAssociatedTokenAccountIdempotentInstruction, createInitializeInstruction, createInitializeMetadataPointerInstruction, createInitializeMint2Instruction, createInitializeMintInstruction, createMintToInstruction, ExtensionType, getAssociatedTokenAddressSync, getMinimumBalanceForRentExemptMint, getMintLen, LENGTH_SIZE, MINT_SIZE, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, TYPE_SIZE } from "@solana/spl-token";
 // import { confirmTransaction } from "./transaction";
 // import { createUpdateFieldInstruction, pack, TokenMetadata } from "@solana/spl-token-metadata";
@@ -15,7 +15,7 @@
 // export const createAccountsMintsAndTokenAccounts = async (
 //   usersAndTokenBalances: Array<Array<number>>,
 //   lamports: number,
-//   connection: Connection,
+//   rpc: Rpc<any>,
 //   payer: CryptoKeyPair,
 // ) => {
 //   const userCount = usersAndTokenBalances.length;
@@ -24,12 +24,12 @@
 //     ...usersAndTokenBalances.map((mintBalances) => mintBalances.length),
 //   );
 
-//   const users = makeCryptoKeypairs(userCount);
-//   const mints = makeCryptoKeypairs(mintCount);
+//   const users = makeCryptoKeyPairs(userCount);
+//   const mints = makeCryptoKeyPairs(mintCount);
 
 //   // This will be returned
 //   // [user index][mint index]address of token account
-//   let tokenAccounts: Array<Array<PublicKey>>;
+//   let tokenAccounts: Array<Array<CryptoKey>>;
 
 //   tokenAccounts = users.map((user) => {
 //     return mints.map((mint) =>
@@ -51,7 +51,7 @@
 //   );
 
 //   // Airdrops to user
-//   const minimumLamports = await getMinimumBalanceForRentExemptMint(connection);
+//   const minimumLamports = await getMinimumBalanceForRentExemptMint(rpc);
 
 //   const createMintInstructions: Array<TransactionInstruction> = mints.map(
 //     (mint) =>
@@ -91,7 +91,7 @@
 
 //   // Finally, make the transaction and send it.
 //   await makeAndSendAndConfirmTransaction(
-//     connection,
+//     rpc,
 //     instructions,
 //     signers,
 //     payer,
@@ -105,15 +105,15 @@
 // };
 
 // export const makeTokenMint = async (
-//   connection: Connection,
+//   rpc: Rpc<any>,
 //   mintAuthority: CryptoKeyPair,
 //   name: string,
 //   symbol: string,
 //   decimals: number,
 //   uri: string,
 //   additionalMetadata: Array<[string, string]> | Record<string, string> = [],
-//   updateAuthority: PublicKey = mintAuthority.publicKey,
-//   freezeAuthority: PublicKey | null = null,
+//   updateAuthority: CryptoKey = mintAuthority.publicKey,
+//   freezeAuthority: CryptoKey | null = null,
 // ) => {
 //   const mint = generateKeyPair();
 
@@ -144,7 +144,7 @@
 //   // Work out how much SOL we need to store our Token
 //   const mintLength = getMintLen([ExtensionType.MetadataPointer]);
 //   const metadataLength = TYPE_SIZE + LENGTH_SIZE + pack(metadata).length;
-//   const mintLamports = await connection.getMinimumBalanceForRentExemption(
+//   const mintLamports = await rpc.getMinimumBalanceForRentExemption(
 //     mintLength + metadataLength,
 //   );
 
@@ -194,7 +194,7 @@
 //   );
 
 //   const signature = await sendAndConfirmTransaction(
-//     connection,
+//     rpc,
 //     mintTransaction,
 //     [mintAuthority, mint],
 //   );
@@ -206,11 +206,11 @@
 // // needed for creating a mint, creating an ATA, and minting tokens to the ATA
 // // TODO: maybe we should expose this? To discuss.
 // const makeMintInstructions = (
-//   mintAddress: PublicKey,
-//   ataAddress: PublicKey,
+//   mintAddress: CryptoKey,
+//   ataAddress: CryptoKey,
 //   amount: number | bigint,
-//   authority: PublicKey,
-//   payer: PublicKey = authority,
+//   authority: CryptoKey,
+//   payer: CryptoKey = authority,
 // ): Array<TransactionInstruction> => {
 //   return [
 //     // Initializes a new mint and optionally deposits all the newly minted tokens in an account.
@@ -245,12 +245,12 @@
 // // https://www.quicknode.com/guides/solana-development/transactions/how-to-use-versioned-transactions-on-solana
 // // TODO: maybe we should expose this? To discuss.
 // const makeAndSendAndConfirmTransaction = async (
-//   connection: Connection,
+//   rpc: Rpc<any>,
 //   instructions: Array<TransactionInstruction>,
 //   signers: Array<Signer>,
 //   payer: CryptoKeyPair,
 // ) => {
-//   const latestBlockhash = (await connection.getLatestBlockhash("max"))
+//   const latestBlockhash = (await rpc.getLatestBlockhash("max"))
 //     .blockhash;
 
 //   const messageV0 = new TransactionMessage({
@@ -261,7 +261,7 @@
 //   const transaction = new VersionedTransaction(messageV0);
 //   transaction.sign(signers);
 
-//   const signature = await connection.sendTransaction(transaction);
+//   const signature = await rpc.sendTransaction(transaction);
 
-//   await confirmTransaction(connection, signature);
+//   await confirmTransaction(rpc, signature);
 // };

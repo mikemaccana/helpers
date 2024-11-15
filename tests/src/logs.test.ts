@@ -1,8 +1,8 @@
 import { describe, test } from "node:test";
 import { Connection } from "@solana/web3.js";
 import { airdropIfRequired, getCustomErrorMessage, getLogs } from "../../src";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { CryptoKeypair } from "@solana/web3.js";
+import { SOL } from "@solana/web3.js";
+import { CryptoKeyPair } from "@solana/web3.js";
 import { Transaction } from "@solana/web3.js";
 import { SystemProgram } from "@solana/web3.js";
 import assert from "node:assert";
@@ -11,17 +11,12 @@ const LOCALHOST = "http://127.0.0.1:8899";
 
 describe("getLogs", () => {
   test("getLogs works", async () => {
-    const connection = new Connection(LOCALHOST);
+    const rpc = getDefaultRpc(LOCALHOST);
     const [sender, recipient] = [generateKeyPair(), generateKeyPair()];
-    const lamportsToAirdrop = 2 * LAMPORTS_PER_SOL;
-    await airdropIfRequired(
-      connection,
-      sender.publicKey,
-      lamportsToAirdrop,
-      1 * LAMPORTS_PER_SOL,
-    );
+    const lamportsToAirdrop = 2 * SOL;
+    await airdropIfRequired(rpc, sender.publicKey, lamportsToAirdrop, 1 * SOL);
 
-    const transaction = await connection.sendTransaction(
+    const transaction = await rpc.sendTransaction(
       new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: sender.publicKey,
@@ -32,14 +27,13 @@ describe("getLogs", () => {
       [sender],
     );
 
-    const logs = await getLogs(connection, transaction);
+    const logs = await getLogs(rpc, transaction);
     assert.deepEqual(logs, [
       "Program 11111111111111111111111111111111 invoke [1]",
       "Program 11111111111111111111111111111111 success",
     ]);
   });
 });
-
 
 describe("getCustomErrorMessage", () => {
   test("we turn error messages with hex codes into error messages for the program", () => {

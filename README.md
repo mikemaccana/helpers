@@ -47,13 +47,13 @@ PRs are very much welcome! Read the [CONTRIBUTING guidelines for the Solana cour
 Usage:
 
 ```typescript
-makeCryptoKeypairs(amount);
+makeCryptoKeyPairs(amount);
 ```
 
-In some situations - like making tests for your onchain programs - you might need to make lots of keypairs at once. You can use `makeCryptoKeypairs()` combined with JS destructuring to quickly create multiple variables with distinct keypairs.
+In some situations - like making tests for your onchain programs - you might need to make lots of keypairs at once. You can use `makeCryptoKeyPairs()` combined with JS destructuring to quickly create multiple variables with distinct keypairs.
 
 ```typescript
-const [sender, recipient] = makeCryptoKeypairs(2);
+const [sender, recipient] = makeCryptoKeyPairs(2);
 ```
 
 ### Make a token mint with metadata
@@ -64,8 +64,8 @@ Unlike older tools, the function uses Token Extensions Metadata and Metadata Poi
 
 Parameters
 
-- `connection`: Connection.
-- `mintAuthority`: CryptoKeypair of the account that can make new tokens.
+- `rpc`: Rpc<any>.
+- `mintAuthority`: CryptoKeyPair of the account that can make new tokens.
 - `name`: string, name of the token.
 - `symbol`: string, like a ticker symbol. Usually in all-caps.
 - `decimals`: number, how many decimal places the new token will have.
@@ -76,7 +76,7 @@ Parameters
 
 ```typescript
 const mintAddress = await makeTokenMint(
-  connection,
+  rpc,
   mintAuthority,
   "Unit test token",
   "TEST",
@@ -102,8 +102,8 @@ const usersMintsAndTokenAccounts = await createAccountsMintsAndTokenAccounts(
     [1_000_000_000, 0], // User 0 has 1_000_000_000 of token A and 0 of token B
     [0, 1_000_000_000], // User 1 has 0 of token A and 1_000_000_000 of token B
   ],
-  1 * LAMPORTS_PER_SOL,
-  connection,
+  1 * SOL,
+  rpc,
   payer,
 );
 ```
@@ -112,8 +112,8 @@ The returned `usersMintsAndTokenAccounts` will be an object of the form:
 
 ```
 {
-  users: <Array<CryptoKeypair>>
-  mints: <Array<CryptoKeypair>>,
+  users: <Array<CryptoKeyPair>>
+  mints: <Array<CryptoKeyPair>>,
   tokenAccounts: <Array<Array><PublicKey>>>
 }
 ```
@@ -195,7 +195,7 @@ And `errorMessage` will now be:
 Usage:
 
 ```typescript
-airdropIfRequired(connection, publicKey, lamports, maximumBalance);
+airdropIfRequired(rpc, publicKey, lamports, maximumBalance);
 ```
 
 Request and confirm an airdrop in one step. As soon as the `await` returns, the airdropped tokens will be ready to use, and the new balance of tokens will be returned. The `maximumBalance` is used to avoid errors caused by unnecessarily asking for SOL when there's already enough in the account, and makes `airdropIfRequired()` very handy in scripts that run repeatedly.
@@ -204,10 +204,10 @@ To ask for 0.5 SOL, if the balance is below 1 SOL, use:
 
 ```typescript
 const newBalance = await airdropIfRequired(
-  connection,
+  rpc,
   keypair.publicKey,
-  0.5 * LAMPORTS_PER_SOL,
-  1 * LAMPORTS_PER_SOL,
+  0.5 * SOL,
+  1 * SOL,
 );
 ```
 
@@ -252,13 +252,13 @@ Will return `"https://explorer.solana.com/block/241889720"`
 Usage:
 
 ```typescript
-confirmTransaction(connection, transaction);
+confirmTransaction(rpc, transaction);
 ```
 
 Confirm a transaction, and also gets the recent blockhash required to confirm it.
 
 ```typescript
-await confirmTransaction(connection, transaction);
+await confirmTransaction(rpc, transaction);
 ```
 
 ### Get the logs for a transaction
@@ -266,13 +266,13 @@ await confirmTransaction(connection, transaction);
 Usage:
 
 ```typescript
-getLogs(connection, transaction);
+getLogs(rpc, transaction);
 ```
 
 Get the logs for a transaction signature:
 
 ```typescript
-const logs = await getLogs(connection, transaction);
+const logs = await getLogs(rpc, transaction);
 ```
 
 The `logs` will be an array of strings, eg:
@@ -291,7 +291,7 @@ This a good way to assert your onchain programs return particular logs during un
 Usage:
 
 ```typescript
-getSimulationComputeUnits(connection, instructions, payer, lookupTables);
+getSimulationComputeUnits(rpc, instructions, payer, lookupTables);
 ```
 
 Get the compute units required for an array of instructions. Create your instructions:
@@ -307,11 +307,7 @@ const sendSol = SystemProgram.transfer({
 Then use `getSimulationComputeUnits` to get the number of compute units the instructions will use:
 
 ```typescript
-const units = await getSimulationComputeUnits(
-  connection,
-  [sendSol],
-  payer.publicKey,
-);
+const units = await getSimulationComputeUnits(rpc, [sendSol], payer.publicKey);
 ```
 
 You can then use `ComputeBudgetProgram.setComputeUnitLimit({ units })` as the first instruction in your transaction. See [How to Request Optimal Compute Budget](https://solana.com/developers/guides/advanced/how-to-request-optimal-compute) for more information on compute units.
@@ -323,7 +319,7 @@ You can then use `ComputeBudgetProgram.setComputeUnitLimit({ units })` as the fi
 Usage:
 
 ```typescript
-getCryptoKeypairFromFile(filename);
+getCryptoKeyPairFromFile(filename);
 ```
 
 Gets a keypair from a file - the format must be the same as [Solana CLI](https://docs.solana.com/wallet-guide/file-system-wallet) uses, ie, a JSON array of numbers:
@@ -331,19 +327,21 @@ Gets a keypair from a file - the format must be the same as [Solana CLI](https:/
 To load the default keypair `~/.config/solana/id.json`, just run:
 
 ```typescript
-const keyPair = await getCryptoKeypairFromFile(file);
+const keyPair = await getCryptoKeyPairFromFile(file);
 ```
 
 or to load a specific file:
 
 ```typescript
-const keyPair = await getCryptoKeypairFromFile("somefile.json");
+const keyPair = await getCryptoKeyPairFromFile("somefile.json");
 ```
 
 or using home dir expansion:
 
 ```typescript
-const keyPair = await getCryptoKeypairFromFile("~/code/solana/demos/steve.json");
+const keyPair = await getCryptoKeyPairFromFile(
+  "~/code/solana/demos/steve.json",
+);
 ```
 
 ### Get a keypair from an environment variable
@@ -351,13 +349,13 @@ const keyPair = await getCryptoKeypairFromFile("~/code/solana/demos/steve.json")
 Usage:
 
 ```typescript
-getCryptoKeypairFromEnvironment(environmentVariable);
+getCryptoKeyPairFromEnvironment(environmentVariable);
 ```
 
 Gets a keypair from a secret key stored in an environment variable. This is typically used to load secret keys from [env files](https://stackoverflow.com/questions/68267862/what-is-an-env-or-dotenv-file-exactly).
 
 ```typescript
-const keypair = await getCryptoKeypairFromEnvironment("SECRET_KEY");
+const keypair = await getCryptoKeyPairFromEnvironment("SECRET_KEY");
 ```
 
 ### Add a new keypair to an env file
@@ -365,19 +363,19 @@ const keypair = await getCryptoKeypairFromEnvironment("SECRET_KEY");
 Usage:
 
 ```typescript
-addCryptoKeypairToEnvFile(keypair, environmentVariable, envFileName);
+addCryptoKeyPairToEnvFile(keypair, environmentVariable, envFileName);
 ```
 
 Saves a keypair to the environment file.
 
 ```typescript
-await addCryptoKeypairToEnvFile(testCryptoKeypair, "SECRET_KEY");
+await addCryptoKeyPairToEnvFile(testCryptoKeyPair, "SECRET_KEY");
 ```
 
 or to specify a file name:
 
 ```typescript
-await addCryptoKeypairToEnvFile(testCryptoKeypair, "SECRET_KEY", ".env.local");
+await addCryptoKeyPairToEnvFile(testCryptoKeyPair, "SECRET_KEY", ".env.local");
 ```
 
 This will also reload the env file.
@@ -387,15 +385,15 @@ This will also reload the env file.
 Usage:
 
 ```typescript
-initializeCryptoKeypair(connection, options);
+initializeCryptoKeyPair(rpc, options);
 ```
 
 Loads in a keypair from the filesystem, or environment and then airdrops to it if needed.
 
-How the keypair is initialized is dependent on the `initializeCryptoKeypairOptions`:
+How the keypair is initialized is dependent on the `initializeCryptoKeyPairOptions`:
 
 ```typescript
-interface initializeCryptoKeypairOptions {
+interface initializeCryptoKeyPairOptions {
   envFileName?: string;
   envVariableName?: string;
   airdropAmount?: number | null;
@@ -413,13 +411,13 @@ If `airdropAmount` amount is set to something other than `null` or `0`, this fun
 To initialize a keypair from the `.env` file, and airdrop it 1 sol if it's beneath 0.5 sol:
 
 ```typescript
-const keypair = await initializeCryptoKeypair(connection);
+const keypair = await initializeCryptoKeyPair(rpc);
 ```
 
 To initialize a keypair from the `.env` file under a different variable name:
 
 ```typescript
-const keypair = await initializeCryptoKeypair(connection, {
+const keypair = await initializeCryptoKeyPair(rpc, {
   envVariableName: "TEST_KEYPAIR",
 });
 ```
@@ -427,30 +425,30 @@ const keypair = await initializeCryptoKeypair(connection, {
 To initialize a keypair from the filesystem, and airdrop it 3 sol:
 
 ```typescript
-const keypair = await initializeCryptoKeypair(connection, {
+const keypair = await initializeCryptoKeyPair(rpc, {
   keypairPath: "~/.config/solana/id.json",
-  airdropAmount: LAMPORTS_PER_SOL * 3,
+  airdropAmount: SOL * 3,
 });
 ```
 
 The default options are as follows:
 
 ```typescript
-const DEFAULT_AIRDROP_AMOUNT = 1 * LAMPORTS_PER_SOL;
-const DEFAULT_MINIMUM_BALANCE = 0.5 * LAMPORTS_PER_SOL;
+const DEFAULT_AIRDROP_AMOUNT = 1 * SOL;
+const DEFAULT_MINIMUM_BALANCE = 0.5 * SOL;
 const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 ```
 
 ## Secret key format
 
-Secret keys can be read in either the more compact base58 format (`base58.encode(randomCryptoKeypair.privateKey);`), like:
+Secret keys can be read in either the more compact base58 format (`base58.encode(randomCryptoKeyPair.privateKey);`), like:
 
 ```bash
 # A random secret key for demo purposes
 SECRET_KEY=QqKYBnj5mcgUsS4vrCeyMczbTyV1SMrr7SjSAPj7JGFtxfrgD8AWU8NciwHNCbmkscbvj4HdeEen42GDBSHCj1N
 ```
 
-Or the longer, 'array of numbers' format `JSON.stringify(Object.values(randomCryptoKeypair.privateKey));`:
+Or the longer, 'array of numbers' format `JSON.stringify(Object.values(randomCryptoKeyPair.privateKey));`:
 
 ```bash
 # A random secret key for demo purposes
@@ -476,7 +474,6 @@ npm run test
 The tests use the [node native test runner](https://blog.logrocket.com/exploring-node-js-native-test-runner/).
 
 If you'd like to run a single test, use:
-
 
 ```bash
 esrun tests/src/keypair.test.ts

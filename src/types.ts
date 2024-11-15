@@ -1,7 +1,9 @@
-export interface InitializeCryptoKeypairOptions {
+import { Lamports } from "@solana/web3.js";
+
+export interface InitializeCryptoKeyPairOptions {
   envFileName?: string;
   envVariableName?: string;
-  airdropAmount?: number | null;
-  minimumBalance?: number;
-  keypairPath?: string;
+  airdropAmount?: Lamports | null;
+  minimumBalance?: Lamports;
+  keyPairPath?: string;
 }

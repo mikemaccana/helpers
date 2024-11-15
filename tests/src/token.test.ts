@@ -1,23 +1,23 @@
 import { describe, test } from "node:test";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { airdropIfRequired, createAccountsMintsAndTokenAccounts, makeTokenMint } from "../../src";
+import { generateKeyPair, lamports, SOL } from "@solana/web3.js";
+import {
+  airdropIfRequired,
+  createAccountsMintsAndTokenAccounts,
+  makeTokenMint,
+} from "../../src";
 import { Connection } from "@solana/web3.js";
-import { CryptoKeypair } from "@solana/web3.js";
+import { CryptoKeyPair } from "@solana/web3.js";
 import { getTokenMetadata } from "@solana/spl-token";
-import assert from 'node:assert';
+import assert from "node:assert";
+import { getDefaultRpc } from "./connect";
 
 const LOCALHOST = "http://127.0.0.1:8899";
 
 describe("makeTokenMint", () => {
   test("makeTokenMint makes a new mint with the specified metadata", async () => {
     const mintAuthority = generateKeyPair();
-    const connection = new Connection(LOCALHOST);
-    await airdropIfRequired(
-      connection,
-      mintAuthority.publicKey,
-      100 * LAMPORTS_PER_SOL,
-      1 * LAMPORTS_PER_SOL,
-    );
+    const rpc = getDefaultRpc(LOCALHOST);
+    await airdropIfRequired(rpc, mintAuthority.publicKey, 100 * SOL, 1 * SOL);
 
     const name = "Unit test token";
     const symbol = "TEST";
@@ -35,7 +35,7 @@ describe("makeTokenMint", () => {
     };
 
     const mintAddress = await makeTokenMint(
-      connection,
+      rpc,
       mintAuthority,
       name,
       symbol,
@@ -46,7 +46,7 @@ describe("makeTokenMint", () => {
 
     assert.ok(mintAddress);
 
-    const tokenMetadata = await getTokenMetadata(connection, mintAddress);
+    const tokenMetadata = await getTokenMetadata(rpc, mintAddress);
 
     if (!tokenMetadata) {
       throw new Error(
@@ -71,16 +71,11 @@ describe("makeTokenMint", () => {
 
 describe("createAccountsMintsAndTokenAccounts", () => {
   test("createAccountsMintsAndTokenAccounts works", async () => {
-    const payer = generateKeyPair();
-    const connection = new Connection(LOCALHOST);
-    await airdropIfRequired(
-      connection,
-      payer.publicKey,
-      100 * LAMPORTS_PER_SOL,
-      1 * LAMPORTS_PER_SOL,
-    );
+    const payer = await generateKeyPair();
+    const rpc = getDefaultRpc(LOCALHOST);
+    await airdropIfRequired(rpc, payer.publicKey, 100 * SOL, 1 * SOL);
 
-    const SOL_BALANCE = 10 * LAMPORTS_PER_SOL;
+    const SOL_BALANCE = lamports(BigInt(10 * SOL));
 
     const usersMintsAndTokenAccounts =
       await createAccountsMintsAndTokenAccounts(
@@ -89,7 +84,7 @@ describe("createAccountsMintsAndTokenAccounts", () => {
           [0, 1_000_000_000], // User 1 has 0 of token A and 1_000_000_000 of token B
         ],
         SOL_BALANCE,
-        connection,
+        rpc,
         payer,
       );
 
@@ -98,8 +93,8 @@ describe("createAccountsMintsAndTokenAccounts", () => {
     assert.equal(users.length, 2);
     await Promise.all(
       users.map(async (user) => {
-        const balance = await connection.getBalance(user.publicKey);
-        assert(balance === SOL_BALANCE);
+        const balanceResponse = await rpc.getBalance(user.publicKey).send();
+        assert(balanceResponse.value === SOL_BALANCE);
       }),
     );
 
@@ -111,15 +106,16 @@ describe("createAccountsMintsAndTokenAccounts", () => {
 
     // Get the balances of the token accounts for the first user
     // (note there is no tokenAccountB balance yet)
-    const firstUserFirstTokenBalance = await connection.getTokenAccountBalance(
+    const firstUserFirstTokenBalance = await rpc.getTokenAccountBalance(
       tokenAccounts[0][0], // First user, first token mint
     );
     assert(Number(firstUserFirstTokenBalance.value.amount) === 1_000_000_000);
 
     // // Get the balances of the token accounts for the second user
     // // (note there is no tokenAccountA account yet)
-    const secondUserSecondTokenBalance =
-      await connection.getTokenAccountBalance(tokenAccounts[1][1]); // Second user, second token mint
+    const secondUserSecondTokenBalance = await rpc.getTokenAccountBalance(
+      tokenAccounts[1][1],
+    ); // Second user, second token mint
     assert(Number(secondUserSecondTokenBalance.value.amount) === 1_000_000_000);
   });
 });

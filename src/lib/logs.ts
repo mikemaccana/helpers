@@ -1,12 +1,17 @@
-import { Connection, RpcResponseAndContext, SignatureResult, SimulatedTransactionResponse } from "@solana/web3.js";
+import {
+  Connection,
+  RpcResponseAndContext,
+  SignatureResult,
+  SimulatedTransactionResponse,
+} from "@solana/web3.js";
 import { confirmTransaction } from "./transaction";
 
 export const getLogs = async (
-  connection: Connection,
+  rpc: Rpc<any>,
   tx: string,
 ): Promise<Array<string>> => {
-  await confirmTransaction(connection, tx);
-  const txDetails = await connection.getTransaction(tx, {
+  await confirmTransaction(rpc, tx);
+  const txDetails = await rpc.getTransaction(tx, {
     maxSupportedTransactionVersion: 0,
     commitment: "confirmed",
   });
@@ -25,7 +30,7 @@ export const getErrorFromRPCResponse = (
   const error = rpcResponse.value.err;
   if (error) {
     // Can be a string or an object (literally just {}, no further typing is provided by the library)
-    // https://github.com/solana-labs/solana-web3.js/blob/4436ba5189548fc3444a9f6efb51098272926945/packages/library-legacy/src/connection.ts#L2930
+    // https://github.com/solana-labs/solana-web3.js/blob/4436ba5189548fc3444a9f6efb51098272926945/packages/library-legacy/src/rpc.ts#L2930
     // TODO: if still occurs in web3.js 2 (unlikely), fix it.
     if (typeof error === "object") {
       const errorKeys = Object.keys(error);
