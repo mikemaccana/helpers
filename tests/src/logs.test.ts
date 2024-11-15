@@ -2,7 +2,7 @@ import { describe, test } from "node:test";
 import { Connection } from "@solana/web3.js";
 import { airdropIfRequired, getCustomErrorMessage, getLogs } from "../../src";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { Keypair } from "@solana/web3.js";
+import { CryptoKeypair } from "@solana/web3.js";
 import { Transaction } from "@solana/web3.js";
 import { SystemProgram } from "@solana/web3.js";
 import assert from "node:assert";
@@ -12,7 +12,7 @@ const LOCALHOST = "http://127.0.0.1:8899";
 describe("getLogs", () => {
   test("getLogs works", async () => {
     const connection = new Connection(LOCALHOST);
-    const [sender, recipient] = [Keypair.generate(), Keypair.generate()];
+    const [sender, recipient] = [generateKeyPair(), generateKeyPair()];
     const lamportsToAirdrop = 2 * LAMPORTS_PER_SOL;
     await airdropIfRequired(
       connection,

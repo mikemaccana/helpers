@@ -1,3 +1,21 @@
+# Version 3
+
+## 3.0
+
+- Use @solana/web3.js version 2
+
+  - Nearly everything returns a `Promise<>` now.
+  - `Keypair.generate();` is now `generateKeyPair()`.
+  - `Keypair` is now `CryptoKeyPair`
+  - `keypair` is spelt `keyPair` everywhere like normal JS/TS variables
+  - `PublicKey` are just `address` now
+  - `secretkey` is now `privateKey`
+  - Commitment levels are defined explicitly
+  - We get the transaction signature from signed transaction
+
+- We no longer support base58 encoded private keys - instead we use the Array of numbers format exclusively. If you have base58 encoded private keys you can convert them with the previous version of this library.
+- Replace @solana/spl-token and @solana/spl-token-metadata with their new replacements XXX
+
 ## 2.5
 
 - Add `makeTokenMint()`

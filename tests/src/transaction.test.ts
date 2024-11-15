@@ -1,8 +1,12 @@
 import { describe, test } from "node:test";
-import { Keypair } from "@solana/web3.js";
+import { CryptoKeypair, generateKeyPair } from "@solana/web3.js";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Connection } from "@solana/web3.js";
-import { airdropIfRequired, confirmTransaction, getSimulationComputeUnits } from "../../src";
+import {
+  airdropIfRequired,
+  confirmTransaction,
+  getSimulationComputeUnits,
+} from "../../src";
 import { sendAndConfirmTransaction } from "@solana/web3.js";
 import { Transaction } from "@solana/web3.js";
 import { SystemProgram } from "@solana/web3.js";
@@ -18,7 +22,7 @@ const MEMO_PROGRAM_ID = new PublicKey(
 describe("confirmTransaction", () => {
   test("confirmTransaction works for a successful transaction", async () => {
     const connection = new Connection(LOCALHOST);
-    const [sender, recipient] = [Keypair.generate(), Keypair.generate()];
+    const [sender, recipient] = [generateKeyPair(), generateKeyPair()];
     const lamportsToAirdrop = 2 * LAMPORTS_PER_SOL;
     await airdropIfRequired(
       connection,
@@ -27,7 +31,8 @@ describe("confirmTransaction", () => {
       1 * LAMPORTS_PER_SOL,
     );
 
-    const signature = await sendAndConfirmTransaction(connection,
+    const signature = await sendAndConfirmTransaction(
+      connection,
       new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: sender.publicKey,
@@ -45,14 +50,14 @@ describe("confirmTransaction", () => {
 describe("getSimulationComputeUnits", () => {
   test("getSimulationComputeUnits returns 300 CUs for a SOL transfer, and 3888 for a SOL transfer with a memo", async () => {
     const connection = new Connection(LOCALHOST);
-    const sender = Keypair.generate();
+    const sender = generateKeyPair();
     await airdropIfRequired(
       connection,
       sender.publicKey,
       1 * LAMPORTS_PER_SOL,
       1 * LAMPORTS_PER_SOL,
     );
-    const recipient = Keypair.generate().publicKey;
+    const recipient = generateKeyPair().publicKey;
 
     const sendSol = SystemProgram.transfer({
       fromPubkey: sender.publicKey,

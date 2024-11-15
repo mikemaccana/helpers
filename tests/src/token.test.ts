@@ -2,7 +2,7 @@ import { describe, test } from "node:test";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { airdropIfRequired, createAccountsMintsAndTokenAccounts, makeTokenMint } from "../../src";
 import { Connection } from "@solana/web3.js";
-import { Keypair } from "@solana/web3.js";
+import { CryptoKeypair } from "@solana/web3.js";
 import { getTokenMetadata } from "@solana/spl-token";
 import assert from 'node:assert';
 
@@ -10,7 +10,7 @@ const LOCALHOST = "http://127.0.0.1:8899";
 
 describe("makeTokenMint", () => {
   test("makeTokenMint makes a new mint with the specified metadata", async () => {
-    const mintAuthority = Keypair.generate();
+    const mintAuthority = generateKeyPair();
     const connection = new Connection(LOCALHOST);
     await airdropIfRequired(
       connection,
@@ -71,7 +71,7 @@ describe("makeTokenMint", () => {
 
 describe("createAccountsMintsAndTokenAccounts", () => {
   test("createAccountsMintsAndTokenAccounts works", async () => {
-    const payer = Keypair.generate();
+    const payer = generateKeyPair();
     const connection = new Connection(LOCALHOST);
     await airdropIfRequired(
       connection,

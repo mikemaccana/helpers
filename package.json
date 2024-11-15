@@ -42,7 +42,7 @@
     "devnet SOL",
     "faucet"
   ],
-  "author": "Mike MacCana <mike.maccana@solana.org>",
+  "author": "Mike MacCana <mike.maccana@gmail.com>",
   "contributors": [
     "Nick Frostbutter",
     "John Liu",
@@ -52,9 +52,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@solana/spl-token": "^0.4.8",
-    "@solana/spl-token-metadata": "^0.1.4",
-    "@solana/web3.js": "^1.95.2",
+    "@solana/assertions": "^2.0.1-canary-20241114225255",
+    "@solana/errors": "^2.0.1-canary-20241114225255",
+    "@solana/web3.js": "^2.0.0",
     "bs58": "^6.0.0",
     "dotenv": "^16.4.5"
   },
@@ -62,6 +62,7 @@
     "@types/node": "^20.16.1",
     "esbuild": "^0.23.1",
     "esbuild-register": "^3.6.0",
+    "esrun": "^3.2.26",
     "prettier": "^3.0.3",
     "typescript": "^5.5.4"
   },

@@ -1,4 +1,4 @@
-export interface InitializeKeypairOptions {
+export interface InitializeCryptoKeypairOptions {
   envFileName?: string;
   envVariableName?: string;
   airdropAmount?: number | null;

@@ -1,18 +1,18 @@
-import { type Connection, Keypair, LAMPORTS_PER_SOL, type PublicKey } from "@solana/web3.js";
-import type { InitializeKeypairOptions } from "../types";
-import { addKeypairToEnvFile, getKeypairFromEnvironment, getKeypairFromFile } from "./keypair";
+import { type Connection, CryptoKeypair, LAMPORTS_PER_SOL, type PublicKey } from "@solana/web3.js";
+import type { InitializeCryptoKeypairOptions } from "../types";
+import { addCryptoKeypairToEnvFile, getCryptoKeypairFromEnvironment, getCryptoKeypairFromFile } from "./keypair";
 
 const DEFAULT_AIRDROP_AMOUNT = 1 * LAMPORTS_PER_SOL;
 const DEFAULT_MINIMUM_BALANCE = 0.5 * LAMPORTS_PER_SOL;
 const DEFAULT_ENV_KEYPAIR_VARIABLE_NAME = "PRIVATE_KEY";
 
-// TODO: honestly initializeKeypair is a bit vague
+// TODO: honestly initializeCryptoKeypair is a bit vague
 // we can probably give this a better name,
 // just not sure what yet
-export const initializeKeypair = async (
+export const initializeCryptoKeypair = async (
   connection: Connection,
-  options?: InitializeKeypairOptions,
-): Promise<Keypair> => {
+  options?: InitializeCryptoKeypairOptions,
+): Promise<CryptoKeypair> => {
   const {
     keypairPath,
     envFileName,
@@ -21,15 +21,15 @@ export const initializeKeypair = async (
     minimumBalance = DEFAULT_MINIMUM_BALANCE,
   } = options || {};
 
-  let keypair: Keypair;
+  let keypair: CryptoKeyPair;
 
   if (keypairPath) {
-    keypair = await getKeypairFromFile(keypairPath);
+    keypair = await getCryptoKeypairFromFile(keypairPath);
   } else if (process.env[envVariableName]) {
-    keypair = getKeypairFromEnvironment(envVariableName);
+    keypair = getCryptoKeypairFromEnvironment(envVariableName);
   } else {
-    keypair = Keypair.generate();
-    await addKeypairToEnvFile(keypair, envVariableName, envFileName);
+    keypair = generateKeyPair();
+    await addCryptoKeypairToEnvFile(keypair, envVariableName, envFileName);
   }
 
   if (airdropAmount) {
