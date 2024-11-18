@@ -106,7 +106,7 @@ describe("getCryptoKeyPairFromFile", () => {
     const { stdout } = await exec(
       `solana-keygen new --force --no-bip39-passphrase -o ${TEST_KEY_PAIR_FILE}`,
     );
-    assert(stdout.includes("Wrote new keypair"));
+    assert(stdout.includes("Wrote new keyPair"));
 
     await writeFile(CORRUPT_TEST_KEY_PAIR, "I AM CORRUPT");
   });
