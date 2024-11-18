@@ -6,7 +6,7 @@
 
   - Nearly everything returns a `Promise<>` now.
   - `Keypair.generate();` is now `generateKeyPair()`.
-  - `Keypair` is now `CryptoKeyPair`
+  - `Keypair` is now `CryptoKeyPair`. For consistentency, functions that refer to 'keypairs' now refer to 'cryptoKeyPairs'
   - The old `keypair` is spelt `keyPair` everywhere like normal JS/TS camelCase.
   - Many places that use `PublicKey` are just `address` now
   - `secretkey` is now `privateKey`
