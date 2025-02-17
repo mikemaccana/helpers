@@ -36,7 +36,7 @@ Kite includes functions for:
 
 ### Tokens
 
-- [Create a new token](#createTokenMint---create-a-new-token)
+- [Create a new token](#createtokenmint---create-a-new-token)
 - [Get token account address](#gettokenaccountaddress---get-token-account-address)
 - [Get token mint information](#getmint---get-token-mint-information)
 - [Get token account balance](#gettokenaccountbalance---get-token-account-balance)
@@ -339,7 +339,7 @@ const signature = await connection.transferLamports({
 
 ## createTokenMint - Create a new token with metadata
 
-Creates a new SPL token with specified parameters.
+Creates a new SPL token mint with specified parameters.
 
 Returns: `Promise<Address>`
 
