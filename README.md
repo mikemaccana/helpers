@@ -7,14 +7,8 @@ and/or node.js, made by the Solana Foundation's
 [Unboxed Software](https://beunboxed.com/), and [StarAtlas](https://staratlas.com/).
 
 > [!IMPORTANT]  
-> `@solana-developers/helpers` is for Solana web3.js version 1. The updated version of this package
-> which is compatible with Solana web3.js version 2 is called `gill`. Learn more here:
->
-> - npm registry - https://www.npmjs.com/package/gill
-> - source repository - https://github.com/solana-foundation/gill
-
-> [!IMPORTANT]  
-> `@solana/helpers` is for Solana web3.js version 1. An updated version of `@solana/helpers` for Solana web3.js version 2 is at https://github.com/helius-labs/kite.
+> `@solana/helpers` is for Solana web3.js version 1. 
+>  The updated version of `@solana/helpers` for Solana Kit (formerly known as Solana web3.js version 2) is [Kite](https://solanakite.org). There is also a new package for Solana Kit called [Gill](https://github.com/solana-foundation/gill).
 
 ## What can I do with this module?
 
