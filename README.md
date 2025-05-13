@@ -8,7 +8,7 @@ and/or node.js, made by the Solana Foundation's
 
 > [!IMPORTANT]  
 > `@solana/helpers` is for Solana web3.js version 1. 
->  The updated version of `@solana/helpers` for Solana Kit (formerly known as Solana web3.js version 2) is [Kite](https://solanakite.org). There is also an naternative new package for Solana Kit called [Gill](https://github.com/solana-foundation/gill).
+>  The updated version of `@solana/helpers` for Solana Kit (formerly known as Solana web3.js version 2) is [Kite](https://solanakite.org). There is also an aternative new package for Solana Kit called [Gill](https://github.com/solana-foundation/gill).
 
 ## What can I do with this module?
 
