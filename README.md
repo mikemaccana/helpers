@@ -13,7 +13,8 @@ and/or node.js, made by the Solana Foundation's
 > The updated version of `@solana-developers/helpers` for Solana Kit is
 > [Kite](https://solanakite.org).
 >
-> Alternative high-level tools for Solana Kit include [Gill](https://www.gillsdk.com/).
+> Alternative high-level tools for Solana Kit include [Framework Kit](https://www.framework-kit.com/) and
+> [Gill](https://www.gillsdk.com/).
 
 ## What can I do with this module?
 
